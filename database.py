@@ -50,4 +50,11 @@ class Database:
             if expense.category not in stats:
                 stats[expense.category] = 0
             stats[expense.category] += expense.amount
-        return stats 
+        return stats
+
+    def get_latest_expense(self, user_id: int) -> Expense:
+        """Get the most recent expense for a user."""
+        return self.session.query(Expense)\
+            .filter_by(user_id=user_id)\
+            .order_by(Expense.date.desc())\
+            .first() 

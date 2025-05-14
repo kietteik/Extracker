@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Chi tiêu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #000000;
+            --secondary-color: #666666;
+            --danger-color: #dc2626;
+            --background-color: #f5f5f5;
+            --card-background: #ffffff;
+            --text-primary: #000000;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --hover-color: #f0f0f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            padding: 2rem;
+        }
+
+        .card {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control,
+        .form-select {
+            border: 1px solid var(--border-color);
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .expense-amount {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .expense-date {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .category-badge {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.25rem;
+            font-weight: 500;
+            background-color: var(--hover-color);
+            color: var(--text-primary);
+        }
+
+        .filter-section {
+            background-color: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 2px solid var(--border-color);
+            padding: 1rem;
+        }
+
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .editable {
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+        }
+
+        .editable:hover {
+            background-color: var(--hover-color);
+        }
+
+        .editable:focus {
+            background-color: var(--card-background);
+            outline: none;
+            border: 1px solid var(--primary-color);
+        }
+
+        .editable-select {
+            appearance: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            width: 100%;
+        }
+
+        .editable-select:hover {
+            background-color: var(--hover-color);
+        }
+
+        .stat-card {
+            background: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="mb-0">Xin chào User #{{ user_id }}</h4>
+            </div>
+            <div>
+                <a href="/logout" class="btn btn-outline-dark">
+                    <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label">Tổng chi tiêu tháng này</div>
+                    <div class="stat-value">{{ "{:,.0f}".format(total_month) }}đ</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label">Chi tiêu trung bình/ngày</div>
+                    <div class="stat-value">{{ "{:,.0f}".format(avg_per_day) }}đ</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label">Số giao dịch</div>
+                    <div class="stat-value">{{ total_transactions }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Bộ lọc</h5>
+                <div class="filter-section">
+                    <form id="filterForm" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Thời gian</label>
+                            <input type="text" class="form-control" id="daterange" name="daterange">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Danh mục</label>
+                            <select class="form-select" name="category">
+                                <option value="">Tất cả</option>
+                                {% for category in categories %}
+                                <option value="{{ category }}">{{ category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-funnel"></i> Lọc
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Mô tả</th>
+                                <th>Số tiền</th>
+                                <th>Danh mục</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for expense in expenses %}
+                            <tr data-expense-id="{{ expense.id }}">
+                                <td class="expense-date">{{ expense.date.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    <span class="editable" data-field="description" contenteditable="true">{{
+                                        expense.description }}</span>
+                                </td>
+                                <td>
+                                    <span class="editable expense-amount" data-field="amount" contenteditable="true">{{
+                                        "{:,.0f}".format(expense.amount) }}</span>đ
+                                </td>
+                                <td>
+                                    <select class="editable-select" data-field="category">
+                                        {% for category in categories %}
+                                        <option value="{{ category }}" {% if category==expense.category %}selected{%
+                                            endif %}>
+                                            {{ category }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script>
+        $( document ).ready( function () {
+            // Initialize date range picker
+            $( '#daterange' ).daterangepicker( {
+                ranges: {
+                    'Hôm nay': [moment(), moment()],
+                    '7 ngày qua': [moment().subtract( 6, 'days' ), moment()],
+                    '30 ngày qua': [moment().subtract( 29, 'days' ), moment()],
+                    'Tháng này': [moment().startOf( 'month' ), moment().endOf( 'month' )],
+                    'Tháng trước': [moment().subtract( 1, 'month' ).startOf( 'month' ), moment().subtract( 1, 'month' ).endOf( 'month' )]
+                },
+                locale: {
+                    format: 'DD/MM/YYYY'
+                },
+                startDate: moment().subtract( 6, 'days' ),
+                endDate: moment()
+            } );
+
+            // Handle inline editing
+            $( '.editable, .editable-select' ).on( 'blur', function () {
+                const $element = $( this );
+                const expenseId = $element.closest( 'tr' ).data( 'expense-id' );
+                const field = $element.data( 'field' );
+                let value = $element.is( 'select' ) ? $element.val() : $element.text().trim();
+
+                // Convert amount string to number
+                if ( field === 'amount' ) {
+                    value = parseFloat( value.replace( /[,.]/g, '' ) );
+                }
+
+                // Send update to server
+                fetch( `/api/expenses/${expenseId}/field`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify( {
+                        [field]: value
+                    } )
+                } )
+                    .then( response => response.json() )
+                    .then( data => {
+                        // Update UI with formatted values
+                        if ( field === 'amount' ) {
+                            $element.text( new Intl.NumberFormat( 'vi-VN' ).format( data.amount ) );
+                        }
+                    } )
+                    .catch( error => {
+                        console.error( 'Error:', error );
+                        alert( 'Có lỗi xảy ra khi cập nhật. Vui lòng thử lại.' );
+                        location.reload();
+                    } );
+            } );
+
+            // Prevent new line in contenteditable
+            $( '.editable' ).on( 'keypress', function ( e ) {
+                if ( e.which === 13 ) {
+                    e.preventDefault();
+                    $( this ).blur();
+                }
+            } );
+        } );
+    </script>
+</body>
+
+</html>

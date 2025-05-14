@@ -1,13 +1,18 @@
 services:
-  - type: worker
-    name: expense-tracker-bot
+  - type: web
+    name: expense-tracker-web
     env: python
     buildCommand: pip install poetry && poetry install
-    startCommand: poetry run python bot.py
+    startCommand: poetry run python main.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.0
       - key: TELEGRAM_BOT_TOKEN
         sync: false
       - key: OPENAI_API_KEY
-        sync: false 
+        sync: false
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /
+    domains:
+      - expense-tracker.onrender.com 
