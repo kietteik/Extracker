@@ -27,18 +27,22 @@ wheels/
 venv/
 ENV/
 
-# Database
-*.db
-*.sqlite3
-
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 
+# Database
+*.db
+*.sqlite3
+
 # Logs
 *.log
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Poetry
 poetry.lock 

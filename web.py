@@ -9,6 +9,10 @@ from database import Database, Expense
 from llm import extract_expense_info, format_expense_message
 from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel
+from telegram import Update
+from telegram.ext import Application
+import os
+from bot import setup_bot
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="your-secret-key")  # Thay thế bằng secret key thực
@@ -23,6 +27,12 @@ class ExpenseUpdate(BaseModel):
     amount: Optional[float] = None
     description: Optional[str] = None
     category: Optional[str] = None
+
+# Initialize Telegram bot
+bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+if bot_token:
+    application = Application.builder().token(bot_token).build()
+    setup_bot(application)
 
 def get_current_user(request: Request) -> Optional[int]:
     user_id = request.session.get("user_id")
@@ -226,6 +236,19 @@ async def edit_expense_with_text(
             "raw_text": expense.raw_text
         }
     }
+
+@app.post("/webhook")
+async def webhook(request: Request):
+    try:
+        update_data = await request.json()
+        update = Update.de_json(update_data, application.bot)
+        await application.process_update(update)
+        return {"status": "ok"}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": str(e)}
+        )
 
 if __name__ == "__main__":
     import uvicorn

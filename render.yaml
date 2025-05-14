@@ -2,8 +2,11 @@ services:
   - type: web
     name: expense-tracker-web
     env: python
-    buildCommand: pip install poetry && poetry install
-    startCommand: poetry run python main.py
+    buildCommand: |
+      pip install poetry
+      poetry install
+      mkdir -p static/css static/js
+    startCommand: poetry run python run_web.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.0
@@ -11,8 +14,26 @@ services:
         sync: false
       - key: OPENAI_API_KEY
         sync: false
+      - key: PORT
+        value: 8000
     plan: free
     autoDeploy: true
     healthCheckPath: /
     domains:
-      - expense-tracker.onrender.com 
+      - expense-tracker.onrender.com
+
+  - type: worker
+    name: expense-tracker-bot
+    env: python
+    buildCommand: pip install poetry && poetry install
+    startCommand: poetry run python run_bot.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: WEBHOOK_URL
+        value: https://expense-tracker.onrender.com/webhook
+    plan: free 
