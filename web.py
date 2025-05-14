@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import json
 from typing import Optional
 from database import Database, Expense
-from llm import extract_expense_info, format_expense_message
+from llm import analyze_message, format_expense_message, MessageIntent
 from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel
 from telegram import Update
@@ -152,8 +152,8 @@ async def add_expense(
     if not user_id:
         raise HTTPException(status_code=401, detail="Not authenticated")
         
-    expense_info = extract_expense_info(raw_text)
-    if expense_info["amount"] is None:
+    intent, expense_info = analyze_message(raw_text)
+    if intent != MessageIntent.ADD_EXPENSE or expense_info["amount"] is None:
         raise HTTPException(status_code=400, detail="Could not extract expense information")
     
     expense = db.add_expense(
@@ -216,17 +216,20 @@ async def edit_expense_with_text(
         "description": expense.description,
         "category": expense.category
     }
-    new_info = extract_expense_info(edit_text, current_expense)
+    intent, expense_info = analyze_message(edit_text, current_expense)
+    
+    if intent != MessageIntent.EDIT_EXPENSE:
+        raise HTTPException(status_code=400, detail="Invalid edit command")
     
     # Update expense
-    expense.amount = new_info["amount"] if new_info["amount"] is not None else expense.amount
-    expense.description = new_info["description"] if new_info["description"] is not None else expense.description
-    expense.category = new_info["category"] if new_info["category"] is not None else expense.category
+    expense.amount = expense_info["amount"] if expense_info["amount"] is not None else expense.amount
+    expense.description = expense_info["description"] if expense_info["description"] is not None else expense.description
+    expense.category = expense_info["category"] if expense_info["category"] is not None else expense.category
     expense.raw_text = edit_text
     db.session.commit()
     
     return {
-        "message": format_expense_message(new_info, is_edit=True),
+        "message": format_expense_message(expense_info, is_edit=True),
         "expense": {
             "id": expense.id,
             "amount": expense.amount,

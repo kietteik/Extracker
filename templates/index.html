@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', path='/css/styles.css') }}" rel="stylesheet">
     <style>
         :root {
             --primary-color: #000000;
@@ -296,71 +297,10 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-    <script>
-        $( document ).ready( function () {
-            // Initialize date range picker
-            $( '#daterange' ).daterangepicker( {
-                ranges: {
-                    'Hôm nay': [moment(), moment()],
-                    '7 ngày qua': [moment().subtract( 6, 'days' ), moment()],
-                    '30 ngày qua': [moment().subtract( 29, 'days' ), moment()],
-                    'Tháng này': [moment().startOf( 'month' ), moment().endOf( 'month' )],
-                    'Tháng trước': [moment().subtract( 1, 'month' ).startOf( 'month' ), moment().subtract( 1, 'month' ).endOf( 'month' )]
-                },
-                locale: {
-                    format: 'DD/MM/YYYY'
-                },
-                startDate: moment().subtract( 6, 'days' ),
-                endDate: moment()
-            } );
-
-            // Handle inline editing
-            $( '.editable, .editable-select' ).on( 'blur', function () {
-                const $element = $( this );
-                const expenseId = $element.closest( 'tr' ).data( 'expense-id' );
-                const field = $element.data( 'field' );
-                let value = $element.is( 'select' ) ? $element.val() : $element.text().trim();
-
-                // Convert amount string to number
-                if ( field === 'amount' ) {
-                    value = parseFloat( value.replace( /[,.]/g, '' ) );
-                }
-
-                // Send update to server
-                fetch( `/api/expenses/${expenseId}/field`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify( {
-                        [field]: value
-                    } )
-                } )
-                    .then( response => response.json() )
-                    .then( data => {
-                        // Update UI with formatted values
-                        if ( field === 'amount' ) {
-                            $element.text( new Intl.NumberFormat( 'vi-VN' ).format( data.amount ) );
-                        }
-                    } )
-                    .catch( error => {
-                        console.error( 'Error:', error );
-                        alert( 'Có lỗi xảy ra khi cập nhật. Vui lòng thử lại.' );
-                        location.reload();
-                    } );
-            } );
-
-            // Prevent new line in contenteditable
-            $( '.editable' ).on( 'keypress', function ( e ) {
-                if ( e.which === 13 ) {
-                    e.preventDefault();
-                    $( this ).blur();
-                }
-            } );
-        } );
-    </script>
+    <script src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script src="{{ url_for('static', path='/js/app.js') }}"></script>
 </body>
 
 </html>
